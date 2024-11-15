@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwritten Digit Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #4CAF50;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #imagePreview {
+            max-width: 280px;
+            max-height: 280px;
+            border: 2px solid #ddd;
+            margin-top: 10px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #result {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        div {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Handwritten Digit Recognition</h1>
+    <input type="file" id="fileInput" accept="image/*" />
+    <div>
+        <h3>Image Preview:</h3>
+        <img id="imagePreview" alt="Uploaded Image Preview" style="display: none;" />
+    </div>
+    <button onclick="submitImage()">Submit</button>
+    <p id="result"></p>
+
+    <script>
+        const fileInput = document.getElementById("fileInput");
+        const imagePreview = document.getElementById("imagePreview");
+
+        // Show the preview when an image is selected
+        fileInput.addEventListener("change", function () {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    imagePreview.src = event.target.result; // Set the preview image source
+                    imagePreview.style.display = "block";   // Display the image
+                };
+
+                reader.readAsDataURL(file); // Convert image to base64 for preview
+            } else {
+                imagePreview.style.display = "none"; // Hide the preview if no image is selected
+            }
+        });
+
+        function submitImage() {
+            if (fileInput.files.length === 0) {
+                alert("Please upload an image file!");
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const imageBase64 = event.target.result;
+                fetch("/predict", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ image: imageBase64 })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("result").innerText = "Prediction: " + data.prediction;
+                });
+            };
+
+            reader.readAsDataURL(file); // Convert image to base64
+        }
+    </script>
+</body>
+</html>
